@@ -1,4 +1,4 @@
-# ISP_Online-Charging-System_DCC
+# ISP Online Charging-System   AAA/DCC
 Author: Fariz Muradov
 
 ## Online Charging System with DCC protocol suite developed as prototype
