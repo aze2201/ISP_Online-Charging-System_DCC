@@ -17,8 +17,8 @@ waiting for connection... listening on port 9999
 
 ### Start DIAMETER server
 <pre>
-cd CHARGEPOINT/src
-python f_demo_OCS_Server.py
+> cd CHARGEPOINT/src
+> python f_demo_OCS_Server.py
 </pre>
 
 
