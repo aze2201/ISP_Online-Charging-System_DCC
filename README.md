@@ -1,5 +1,8 @@
 # ISP_Online-Charging-System_DCC
+Author: Fariz Muradov
 
+## Online Charging System with DCC protocol suite developed as prototype
+Database architecture
 
 ![GitHub Logo](OCSLightweight.png)
 
