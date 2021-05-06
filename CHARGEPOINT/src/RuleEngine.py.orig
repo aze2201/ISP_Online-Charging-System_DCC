@@ -1,0 +1,48 @@
+
+from RulePredefinedFunctions import * 
+
+def ChargeReserve(InputJson,CC_TIME,GrantedTime):
+	SubsID=InputJson['SubsID']
+	try:
+		ServiceType=InputJson['ServiceType']
+	except:
+		ServiceType=1
+	ChargeInfo={}
+	result={}
+	ChargeInfo['StatusSubcriber']=getSubcriberStatus(SubsID)
+	ChargeInfo['CC_TYPE']=InputJson['CC_TYPE']
+	if ChargeInfo['StatusSubcriber']==0:
+		ChargeInfo['AccountID']=getAccount(SubsID)
+		ChargeInfo['BALANCE']=getBalance(ChargeInfo['AccountID'])
+		ChargeInfo['OfferID']=getOffer(ChargeInfo['AccountID'])
+		ChargeInfo['ProductProperty']=getProductID(ChargeInfo['OfferID'],ServiceType)        
+		ChargeInfo['OfferCost']=getOfferCost(ChargeInfo['OfferID'])
+		if ChargeInfo['ProductProperty']['ServiceType']==1 :      # THIS IS DAta                       
+			if ChargeInfo['ProductProperty']['ProductType'].upper()=='LIMITED':
+				ChargeInfo['PolicyID']=getPolicy(ChargeInfo['ProductProperty']['ProductID'])
+				ChargeInfo['TimeSchema']=getTimeSchema(ChargeInfo['PolicyID'])
+				ChargeInfo['Rate']=RateByRate(ChargeInfo['TimeSchema'])
+				ChargeInfo['FinalCharge']=PricingPerUnit(ChargeInfo['ProductProperty']['ProductFee'],ChargeInfo['ProductProperty']['ReserveAmount'],ChargeInfo['ProductProperty']['LimitAmount'])
+				ChargeInfo['FinalCharge']['PRICE']=ChargeInfo['Rate']* round(ChargeInfo['FinalCharge']['PRICE'],4)
+				if ChargeInfo['BALANCE']['MAIN_BALANCE'] >= ChargeInfo['OfferCost']:
+					if ChargeInfo['BALANCE']['DATA_BALANCE'] >= ChargeInfo['ProductProperty']['ReserveAmount']:
+						result=ReserveChargeAmountDATA(ChargeInfo['AccountID'],ChargeInfo['ProductProperty']['ReserveAmount'],CC_TIME,'N')
+					elif ChargeInfo['BALANCE']['DATA_BALANCE'] < ChargeInfo['ProductProperty']['ReserveAmount']  > 0:
+						result=ReserveChargeAmountDATA(ChargeInfo['AccountID'],ChargeInfo['BALANCE']['DATA_BALANCE'],CC_TIME,'N')    # CC-time and maxbytes
+					else:
+						result=ReserveChargeAmountDATA(ChargeInfo['AccountID'],0)	# it will throw error. check it.
+				else:
+					result={'AccountID':ChargeInfo['AccountID'],'AMOUNT':ChargeInfo['BALANCE']['DATA_BALANCE'],'Result-Code':'4999'}
+			elif ChargeInfo['ProductProperty']['ProductType'].upper()=='UNLIMITED':
+				if ChargeInfo['BALANCE']['MAIN_BALANCE'] >= ChargeInfo['OfferCost']:
+					result=ReserveChargeAmountDATA(ChargeInfo['AccountID'],ChargeInfo['ProductProperty']['ReserveAmount'],CC_TIME,'P')
+		UpdateSessionTable(ChargeInfo,CC_TIME)
+		if ChargeInfo['ProductProperty']['ServiceType']==0 :                         # THIS IS VOICE
+			ChargeInfo['PolicyID']=getPolicy(ChargeInfo['ProductProperty']['ProductID'])
+			ChargeInfo['TimeSchema']=getTimeSchema(ChargeInfo['PolicyID'])
+			ChargeInfo['Rate']=RateByRate(ChargeInfo['TimeSchema'])
+			ChargeInfo['FinalCharge']=PricingPerUnit(ChargeInfo['ProductProperty']['ProductFee'],ChargeInfo['ProductProperty']['ReserveAmount'],ChargeInfo['ProductProperty']['LimitAmount'])
+			ChargeInfo['FinalCharge']['PRICE']=ChargeInfo['Rate']* round(ChargeInfo['FinalCharge']['PRICE'],4)
+			if ChargeInfo['BALANCE']['MAIN_BALANCE'] >= ChargeInfo['FinalCharge']['PRICE']:  # may be need to check expirtion time
+				result=ReserveChargeAmountVOICE(ChargeInfo['AccountID'],ChargeInfo['FinalCharge']['PRICE'],CC_TIME,GrantedTime.'N')
+	return result
