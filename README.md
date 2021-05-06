@@ -1,7 +1,15 @@
-# ISP Online Charging-System   AAA/DCC
+# ISP Online Charging-System (Prepaid)
+## AAA/DCC   interfaces: Sy/Ro/Gy
+
+
 Author: Fariz Muradov
 
 ## Online Charging System with DCC protocol suite developed as prototype
+
+![GitHub Logo](Telecom_arch.png)
+
+
+
 Database architecture
 
 ![GitHub Logo](OCSLightweight.png)
